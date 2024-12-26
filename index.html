@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kiosk Camera with Details</title>
+    <style>
+        video {
+            width: 100%;
+            max-width: 500px;
+            margin-top: 20px;
+        }
+        #camera-details {
+            margin-top: 20px;
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <h1>Kiosk Camera</h1>
+    <p>The camera will activate automatically when you visit this page.</p>
+    <video id="video-feed" autoplay playsinline></video>
+    <div id="camera-details"></div>
+
+    <script>
+        async function startCamera() {
+            const videoFeed = document.getElementById('video-feed');
+            const cameraDetailsDiv = document.getElementById('camera-details');
+
+            try {
+                // Get video stream
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: "user" }, // Use "environment" for the back camera
+                    audio: false
+                });
+
+                // Display the video stream
+                videoFeed.srcObject = stream;
+
+                // Get and display camera details
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const cameraDetails = videoDevices.map((device, index) => `
+                    <p><strong>Camera ${index + 1}:</strong></p>
+                    <ul>
+                        <li><strong>Label:</strong> ${device.label || 'Unknown Camera'}</li>
+                        <li><strong>Device ID:</strong> ${device.deviceId}</li>
+                        <li><strong>Group ID:</strong> ${device.groupId}</li>
+                    </ul>
+                `).join('');
+
+                cameraDetailsDiv.innerHTML = `
+                    <h2>Camera Details:</h2>
+                    ${cameraDetails}
+                `;
+            } catch (error) {
+                console.error('Error accessing the camera:', error);
+                cameraDetailsDiv.innerHTML = `
+                    <p style="color: red;">Error accessing the camera: ${error.message}</p>
+                `;
+            }
+        }
+
+        // Start camera automatically on page load
+        window.onload = startCamera;
+    </script>
+</body>
+</html>
